@@ -1,4 +1,4 @@
-package com.github.dhaval2404.imagepicker.sample.util
+package com.github.harmanbeer007.imagepicker.sample.util
 
 import android.graphics.BitmapFactory
 import java.io.File

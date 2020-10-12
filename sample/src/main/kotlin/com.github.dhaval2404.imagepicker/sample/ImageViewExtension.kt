@@ -1,4 +1,4 @@
-package com.github.dhaval2404.imagepicker.sample
+package com.github.harmanbeer007.imagepicker.sample
 
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
