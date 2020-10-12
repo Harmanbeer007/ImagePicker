@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity() {
             .crop()
             // User can only select image from Gallery
             .galleryOnly()
-
+            .setMultipleAllowed(true)
             .galleryMimeTypes(  //no gif images at all
                 mimeTypes = arrayOf(
                     "image/png",
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
             .cameraOnly()
             // Image size will be less than 1024 KB
             .compress(1024)
-            .setMultipleAllowed(false)
+            .setMultipleAllowed(true)
             .saveDir(Environment.getExternalStorageDirectory())
             // .saveDir(Environment.getExternalStorageDirectory().absolutePath+File.separator+"ImagePicker")
             // .saveDir(getExternalFilesDir(null)!!)

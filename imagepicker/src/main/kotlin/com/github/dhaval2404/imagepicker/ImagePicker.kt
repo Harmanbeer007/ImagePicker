@@ -343,7 +343,7 @@ open class ImagePicker {
                 putStringArray(EXTRA_MIME_TYPES, mimeTypes)
 
                 putBoolean(EXTRA_CROP, crop)
-                putBoolean(MULTIPLE_FILES_ALLOWED, crop)
+                putBoolean(MULTIPLE_FILES_ALLOWED, isMultiple)
                 putFloat(EXTRA_CROP_X, cropX)
                 putFloat(EXTRA_CROP_Y, cropY)
 

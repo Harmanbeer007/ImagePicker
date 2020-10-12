@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.github.dhaval2404.imagepicker.constant.ImageProvider
 import com.github.dhaval2404.imagepicker.provider.CameraProvider
@@ -243,7 +242,9 @@ class ImagePickerActivity : AppCompatActivity() {
             mImageFile = file
             when {
                 mCropProvider.isCropEnabled() -> mCropProvider.startIntent(file, true)
-                mCompressionProvider.isCompressionRequired(file) -> mCompressionProvider.compress(file)
+                mCompressionProvider.isCompressionRequired(file) -> mCompressionProvider.compress(
+                    file
+                )
                 else -> setMultipleImageResult(fileList)
 
             }
@@ -262,12 +263,6 @@ class ImagePickerActivity : AppCompatActivity() {
         mCroppedImageList?.add(FileDetail(file.absolutePath, Uri.EMPTY, file))
         if (mCroppedImageList?.size == selectedNumberOfImages) {
             setMultipleImageResult(mCroppedImageList!!)
-        } else {
-            Toast.makeText(
-                this,
-                (selectedNumberOfImages - mCroppedImageList?.size!!).toString(),
-                Toast.LENGTH_SHORT
-            ).show()
         }
     }
 }
