@@ -33,6 +33,7 @@ class CropProvider(activity: ImagePickerActivity) : BaseProvider(activity) {
         private const val STATE_CROP_FILE = "state.crop_file"
     }
 
+    private var isMultipleFiles: Boolean = false
     private val mMaxWidth: Int
     private val mMaxHeight: Int
 
@@ -94,8 +95,9 @@ class CropProvider(activity: ImagePickerActivity) : BaseProvider(activity) {
     /**
      * Start Crop Activity
      */
-    fun startIntent(file: File) {
-        cropImage(file)
+    fun startIntent(file: File, isMultipleFiles: Boolean) {
+        this.isMultipleFiles = isMultipleFiles
+        cropImage(file, isMultipleFiles)
     }
 
     /**
@@ -103,7 +105,7 @@ class CropProvider(activity: ImagePickerActivity) : BaseProvider(activity) {
      * @throws IOException if failed to crop image
      */
     @Throws(IOException::class)
-    private fun cropImage(file: File) {
+    private fun cropImage(file: File, isMultipleFiles: Boolean) {
         val uri = Uri.fromFile(file)
         val extension = FileUriUtils.getImageExtension(uri)
         mCropImageFile = FileUtil.getImageFile(dir = mFileDir, extension = extension)
@@ -166,7 +168,11 @@ class CropProvider(activity: ImagePickerActivity) : BaseProvider(activity) {
      */
     private fun handleResult(file: File?) {
         if (file != null) {
-            activity.setCropImage(file)
+            if (isMultipleFiles) {
+                activity.setMultipleCropImage(file)
+            } else {
+                activity.setCropImage(file)
+            }
         } else {
             setError(R.string.error_failed_to_crop_image)
         }

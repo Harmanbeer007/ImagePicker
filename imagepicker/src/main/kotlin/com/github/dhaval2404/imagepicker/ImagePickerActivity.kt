@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.github.dhaval2404.imagepicker.constant.ImageProvider
 import com.github.dhaval2404.imagepicker.provider.CameraProvider
@@ -39,8 +40,10 @@ class ImagePickerActivity : AppCompatActivity() {
         }
     }
 
+    private var selectedNumberOfImages: Int = 0
     private var mGalleryProvider: GalleryProvider? = null
     private var mCameraProvider: CameraProvider? = null
+    private var mCroppedImageList: ArrayList<FileDetail>? = null
     private lateinit var mCropProvider: CropProvider
     private lateinit var mCompressionProvider: CompressionProvider
 
@@ -149,7 +152,7 @@ class ImagePickerActivity : AppCompatActivity() {
     fun setImage(file: File) {
         mImageFile = file
         when {
-            mCropProvider.isCropEnabled() -> mCropProvider.startIntent(file)
+            mCropProvider.isCropEnabled() -> mCropProvider.startIntent(file, false)
             mCompressionProvider.isCompressionRequired(file) -> mCompressionProvider.compress(file)
             else -> setResult(file)
         }
@@ -164,7 +167,6 @@ class ImagePickerActivity : AppCompatActivity() {
      */
     fun setCropImage(file: File) {
         mCropFile = file
-
         mCameraProvider?.let {
             // Delete Camera file after crop. Else there will be two image for the same action.
             // In case of Gallery Provider, we will get original image path, so we will not delete that.
@@ -230,5 +232,42 @@ class ImagePickerActivity : AppCompatActivity() {
         intent.putExtra(ImagePicker.EXTRA_ERROR, message)
         setResult(ImagePicker.RESULT_ERROR, intent)
         finish()
+    }
+
+    fun setMultipleImage(fileList: ArrayList<FileDetail>) {
+        mCroppedImageList = ArrayList()
+        val currentFile: Int = 0
+        selectedNumberOfImages = fileList.size
+        for (fileDetail in fileList) {
+            val file = fileDetail.file
+            mImageFile = file
+            when {
+                mCropProvider.isCropEnabled() -> mCropProvider.startIntent(file, true)
+                mCompressionProvider.isCompressionRequired(file) -> mCompressionProvider.compress(file)
+                else -> setMultipleImageResult(fileList)
+
+            }
+        }
+    }
+
+    private fun setMultipleImageResult(file: ArrayList<FileDetail>) {
+        val intent = Intent()
+//        intent.data = Uri.fromFile(file)
+        intent.putExtra(ImagePicker.MULTIPLE_FILES_PATH, file)
+        setResult(Activity.RESULT_OK, intent)
+        finish()
+    }
+
+    fun setMultipleCropImage(file: File) {
+        mCroppedImageList?.add(FileDetail(file.absolutePath, Uri.EMPTY, file))
+        if (mCroppedImageList?.size == selectedNumberOfImages) {
+            setMultipleImageResult(mCroppedImageList!!)
+        } else {
+            Toast.makeText(
+                this,
+                (selectedNumberOfImages - mCroppedImageList?.size!!).toString(),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 }

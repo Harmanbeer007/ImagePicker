@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import androidx.core.app.ActivityCompat.requestPermissions
+import com.github.dhaval2404.imagepicker.FileDetail
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.github.dhaval2404.imagepicker.ImagePickerActivity
 import com.github.dhaval2404.imagepicker.R
@@ -19,8 +20,8 @@ import java.io.File
  * @version 1.0
  * @since 04 January 2019
  */
-class GalleryProvider(activity: ImagePickerActivity) :
-    BaseProvider(activity) {
+class GalleryProvider(activity: ImagePickerActivity) : BaseProvider(activity) {
+    private var fileList: ArrayList<FileDetail>? = null
 
     companion object {
         /**
@@ -36,11 +37,13 @@ class GalleryProvider(activity: ImagePickerActivity) :
 
     // Mime types restrictions for gallery. By default all mime types are valid
     private val mimeTypes: Array<String>
+    private var mMultipleAllowed: Boolean = false
 
     init {
         val bundle = activity.intent.extras!!
 
         mimeTypes = bundle.getStringArray(ImagePicker.EXTRA_MIME_TYPES) ?: emptyArray()
+        mMultipleAllowed = bundle.getBoolean(ImagePicker.MULTIPLE_FILES_ALLOWED) ?: false
     }
 
     /**
@@ -68,6 +71,7 @@ class GalleryProvider(activity: ImagePickerActivity) :
      */
     private fun startGalleryIntent() {
         val galleryIntent = IntentUtils.getGalleryIntent(activity, mimeTypes)
+        galleryIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, mMultipleAllowed)
         activity.startActivityForResult(galleryIntent, GALLERY_INTENT_REQ_CODE)
     }
 
@@ -108,16 +112,30 @@ class GalleryProvider(activity: ImagePickerActivity) :
      * This method will be called when final result fot this provider is enabled.
      */
     private fun handleResult(data: Intent?) {
-        val uri = data?.data
-        if (uri != null) {
-            val filePath: String? = FileUriUtils.getRealPath(activity, uri)
-            if (!filePath.isNullOrEmpty()) {
-                activity.setImage(File(filePath))
+        if (null != data) {
+            if (null != data.clipData) {
+                fileList = ArrayList<FileDetail>()
+                for (i in 0 until data.clipData.itemCount) {
+                    val uri = data.clipData.getItemAt(i).uri
+                    val filePath: String? = FileUriUtils.getRealPath(activity, uri)
+                    fileList!!.add(FileDetail(filePath, uri, File(filePath)))
+                }
+                activity.setMultipleImage(fileList!!)
             } else {
-                setError(R.string.error_failed_pick_gallery_image)
+                val uri = data?.data
+                if (uri != null) {
+                    val filePath: String? = FileUriUtils.getRealPath(activity, uri)
+                    if (!filePath.isNullOrEmpty()) {
+                        activity.setImage(File(filePath))
+                    } else {
+                        setError(R.string.error_failed_pick_gallery_image)
+                    }
+                } else {
+                    setError(R.string.error_failed_pick_gallery_image)
+                }
             }
-        } else {
-            setError(R.string.error_failed_pick_gallery_image)
         }
+
+
     }
 }

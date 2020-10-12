@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.github.dhaval2404.imagepicker.FileDetail
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.github.dhaval2404.imagepicker.sample.util.FileUtil
 import com.github.dhaval2404.imagepicker.sample.util.IntentUtil
@@ -62,7 +63,7 @@ class MainActivity : AppCompatActivity() {
             // Crop Square image
             .cropSquare()
             .setImageProviderInterceptor { imageProvider -> // Intercept ImageProvider
-                Log.d("ImagePicker", "Selected ImageProvider: "+imageProvider.name)
+                Log.d("ImagePicker", "Selected ImageProvider: " + imageProvider.name)
             }
             // Image resolution will be less than 512 x 512
             .maxResultSize(512, 512)
@@ -94,6 +95,7 @@ class MainActivity : AppCompatActivity() {
             .cameraOnly()
             // Image size will be less than 1024 KB
             .compress(1024)
+            .setMultipleAllowed(false)
             .saveDir(Environment.getExternalStorageDirectory())
             // .saveDir(Environment.getExternalStorageDirectory().absolutePath+File.separator+"ImagePicker")
             // .saveDir(getExternalFilesDir(null)!!)
@@ -103,21 +105,42 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
-            Log.e("TAG", "Path:${ImagePicker.getFilePath(data)}")
-            // File object will not be null for RESULT_OK
-            val file = ImagePicker.getFile(data)!!
-            when (requestCode) {
-                PROFILE_IMAGE_REQ_CODE -> {
-                    mProfileFile = file
-                    imgProfile.setLocalImage(file, true)
+            if (data?.hasExtra(ImagePicker.EXTRA_FILE_PATH)!!) {
+                Log.e("TAG", "Path:${ImagePicker.getFilePath(data)}")
+                // File object will not be null for RESULT_OK
+                val file = ImagePicker.getFile(data)!!
+                when (requestCode) {
+                    PROFILE_IMAGE_REQ_CODE -> {
+                        mProfileFile = file
+                        imgProfile.setLocalImage(file, true)
+                    }
+                    GALLERY_IMAGE_REQ_CODE -> {
+                        mGalleryFile = file
+                        imgGallery.setLocalImage(file)
+                    }
+                    CAMERA_IMAGE_REQ_CODE -> {
+                        mCameraFile = file
+                        imgCamera.setLocalImage(file, false)
+                    }
                 }
-                GALLERY_IMAGE_REQ_CODE -> {
-                    mGalleryFile = file
-                    imgGallery.setLocalImage(file)
-                }
-                CAMERA_IMAGE_REQ_CODE -> {
-                    mCameraFile = file
-                    imgCamera.setLocalImage(file, false)
+            } else if (data?.hasExtra(ImagePicker.MULTIPLE_FILES_PATH)!!) {
+                val files = ImagePicker.getAllFile(data)!! as ArrayList<FileDetail>
+                if (files != null && files.size > 0) {
+                    val file = files[0].file
+                    when (requestCode) {
+                        PROFILE_IMAGE_REQ_CODE -> {
+                            mProfileFile = file
+                            imgProfile.setLocalImage(file, true)
+                        }
+                        GALLERY_IMAGE_REQ_CODE -> {
+                            mGalleryFile = file
+                            imgGallery.setLocalImage(file)
+                        }
+                        CAMERA_IMAGE_REQ_CODE -> {
+                            mCameraFile = file
+                            imgCamera.setLocalImage(file, false)
+                        }
+                    }
                 }
             }
         } else if (resultCode == ImagePicker.RESULT_ERROR) {

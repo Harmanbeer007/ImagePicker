@@ -29,6 +29,7 @@ open class ImagePicker {
         internal const val EXTRA_IMAGE_PROVIDER = "extra.image_provider"
         internal const val EXTRA_IMAGE_MAX_SIZE = "extra.image_max_size"
         internal const val EXTRA_CROP = "extra.crop"
+        internal const val MULTIPLE_FILES_ALLOWED = "extra.multiple"
         internal const val EXTRA_CROP_X = "extra.crop_x"
         internal const val EXTRA_CROP_Y = "extra.crop_y"
         internal const val EXTRA_MAX_WIDTH = "extra.max_width"
@@ -36,7 +37,8 @@ open class ImagePicker {
         internal const val EXTRA_SAVE_DIRECTORY = "extra.save_directory"
 
         internal const val EXTRA_ERROR = "extra.error"
-        internal const val EXTRA_FILE_PATH = "extra.file_path"
+        const val EXTRA_FILE_PATH = "extra.file_path"
+        const val MULTIPLE_FILES_PATH = "extra.multiple_file_path"
         internal const val EXTRA_MIME_TYPES = "extra.mime_types"
 
         /**
@@ -76,6 +78,10 @@ open class ImagePicker {
             return data?.getStringExtra(EXTRA_FILE_PATH)
         }
 
+        private fun getAllFilePath(data: Intent?): ArrayList<FileDetail>? {
+            return data?.getParcelableArrayListExtra(MULTIPLE_FILES_PATH)
+        }
+
         /**
          * Get File from intent
          */
@@ -83,6 +89,14 @@ open class ImagePicker {
             val path = getFilePath(data)
             if (path != null) {
                 return File(path)
+            }
+            return null
+        }
+
+        fun getAllFile(data: Intent?): ArrayList<FileDetail>? {
+            val path = getAllFilePath(data)
+            if (path != null) {
+                return path
             }
             return null
         }
@@ -104,6 +118,7 @@ open class ImagePicker {
         private var cropX: Float = 0f
         private var cropY: Float = 0f
         private var crop: Boolean = false
+        private var isMultiple: Boolean = false
 
         /*
          * Resize Parameters
@@ -198,6 +213,12 @@ open class ImagePicker {
          */
         fun cropSquare(): Builder {
             return crop(1f, 1f)
+        }
+
+
+        fun setMultipleAllowed(isMultiple: Boolean): Builder {
+            this.isMultiple = isMultiple
+            return this
         }
 
         /**
@@ -322,6 +343,7 @@ open class ImagePicker {
                 putStringArray(EXTRA_MIME_TYPES, mimeTypes)
 
                 putBoolean(EXTRA_CROP, crop)
+                putBoolean(MULTIPLE_FILES_ALLOWED, crop)
                 putFloat(EXTRA_CROP_X, cropX)
                 putFloat(EXTRA_CROP_Y, cropY)
 
@@ -358,8 +380,12 @@ open class ImagePicker {
                 }
             } catch (e: Exception) {
                 if (e is ClassNotFoundException) {
-                    Toast.makeText(if (fragment != null) fragment!!.context else activity, "InlineActivityResult library not installed falling back to default method, please install " +
-                            "it from https://github.com/florent37/InlineActivityResult if you want to get inline activity results.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        if (fragment != null) fragment!!.context else activity,
+                        "InlineActivityResult library not installed falling back to default method, please install " +
+                                "it from https://github.com/florent37/InlineActivityResult if you want to get inline activity results.",
+                        Toast.LENGTH_LONG
+                    ).show()
                     startActivity(REQUEST_CODE)
                 }
             }
