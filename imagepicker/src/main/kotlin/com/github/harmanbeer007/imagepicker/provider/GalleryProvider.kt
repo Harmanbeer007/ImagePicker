@@ -120,6 +120,7 @@ class GalleryProvider(activity: ImagePickerActivity) : BaseProvider(activity) {
                     val filePath: String? = FileUriUtils.getRealPath(activity, uri)
                     fileList!!.add(FileDetail(filePath, uri, File(filePath)))
                 }
+                activity.selectedNumberOfImages = fileList!!.size
                 activity.setMultipleImage(fileList!!)
             } else {
                 val uri = data?.data

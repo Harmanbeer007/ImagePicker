@@ -40,7 +40,7 @@ class ImagePickerActivity : AppCompatActivity() {
     }
 
     private lateinit var fileToCrop: java.util.ArrayList<FileDetail>
-    private var selectedNumberOfImages: Int = 0
+    var selectedNumberOfImages: Int = 0
     private var mGalleryProvider: GalleryProvider? = null
     private var mCameraProvider: CameraProvider? = null
     private var mCroppedImageList: ArrayList<FileDetail>? = null
@@ -238,7 +238,7 @@ class ImagePickerActivity : AppCompatActivity() {
         this.fileToCrop = fileList
 
         val currentFile: Int = 0
-        selectedNumberOfImages = fileList.size
+
         if (!fileList.isNullOrEmpty()) {
             val file = fileList[0].file
             setMultipleCropper(file)
