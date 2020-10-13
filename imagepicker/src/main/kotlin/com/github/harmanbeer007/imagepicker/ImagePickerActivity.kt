@@ -39,6 +39,7 @@ class ImagePickerActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var fileToCrop: java.util.ArrayList<FileDetail>
     private var selectedNumberOfImages: Int = 0
     private var mGalleryProvider: GalleryProvider? = null
     private var mCameraProvider: CameraProvider? = null
@@ -87,7 +88,7 @@ class ImagePickerActivity : AppCompatActivity() {
 
         // Create Compression Provider
         mCompressionProvider = CompressionProvider(this)
-
+        mCroppedImageList = ArrayList()
         // Retrieve Image Provider
         val provider: ImageProvider? =
             intent?.getSerializableExtra(ImagePicker.EXTRA_IMAGE_PROVIDER) as ImageProvider?
@@ -234,20 +235,29 @@ class ImagePickerActivity : AppCompatActivity() {
     }
 
     fun setMultipleImage(fileList: ArrayList<FileDetail>) {
-        mCroppedImageList = ArrayList()
+        this.fileToCrop = fileList
+
         val currentFile: Int = 0
         selectedNumberOfImages = fileList.size
-        for (fileDetail in fileList) {
-            val file = fileDetail.file
-            mImageFile = file
-            when {
-                mCropProvider.isCropEnabled() -> mCropProvider.startIntent(file, true)
-                mCompressionProvider.isCompressionRequired(file) -> mCompressionProvider.compress(
-                    file
-                )
-                else -> setMultipleImageResult(fileList)
-
+        if (!fileList.isNullOrEmpty()) {
+            val file = fileList[0].file
+            setMultipleCropper(file)
+            try {
+                fileList.remove(fileList[0])
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
+        }
+
+    }
+
+    private fun setMultipleCropper(file: File) {
+        mImageFile = file
+        when {
+            mCropProvider.isCropEnabled() -> mCropProvider.startIntent(file, true)
+            mCompressionProvider.isCompressionRequired(file) -> mCompressionProvider.compress(
+                file
+            )
         }
     }
 
@@ -263,6 +273,8 @@ class ImagePickerActivity : AppCompatActivity() {
         mCroppedImageList?.add(FileDetail(file.absolutePath, Uri.EMPTY, file))
         if (mCroppedImageList?.size == selectedNumberOfImages) {
             setMultipleImageResult(mCroppedImageList!!)
+        } else {
+            setMultipleImage(fileToCrop)
         }
     }
 }
